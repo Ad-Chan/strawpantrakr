@@ -305,7 +305,7 @@
 
     <!-- NEW tab -->
     <div id="modal-panel-new">
-      <div style="font-size:14px;color:#FF2D78;letter-spacing:3px;margin-bottom:8px;">✦ NEW TASK ✦</div>
+      <div id="modal-new-title" style="font-size:14px;color:#FF2D78;letter-spacing:3px;margin-bottom:8px;">✦ NEW TASK ✦</div>
       <input id="new-task-input" type="text" placeholder="WHAT 2 DO..." inputmode="text"
         style="width:100%;background:white;border:2px solid #FFB3D1;padding:10px 12px;font-size:20px;color:#CC0055;margin-bottom:10px;box-shadow:2px 2px 0 #FFB3D1;">
       <div style="font-size:14px;color:#FF2D78;letter-spacing:2px;margin-bottom:6px;">✦ PICK A STAMP</div>
@@ -315,7 +315,7 @@
       </div>
       <div style="display:flex;gap:8px;padding-bottom:16px;">
         <button class="btn" onclick="closeModal()" style="flex:1;">CANCEL</button>
-        <button class="btn primary" onclick="addTask()" style="flex:2;">+ ADD TASK</button>
+        <button id="modal-submit-btn" class="btn primary" onclick="addTask()" style="flex:2;">+ ADD TASK</button>
       </div>
     </div>
 
@@ -425,6 +425,18 @@ function addTask() {
   const input = document.getElementById('new-task-input');
   const text  = input.value.trim();
   if (!text) return;
+
+  // Edit mode — update existing task
+  if (_editingTask) {
+    const { dateKey, taskId } = _editingTask;
+    state.tasks[dateKey] = (state.tasks[dateKey] || []).map(t =>
+      t.id === taskId ? { ...t, text, stamp: stampRef(state.newStamp) } : t
+    );
+    save(); closeModal(); render();
+    return;
+  }
+
+  // Add mode — create new task
   const task = { id: Date.now(), text, done: false, stamp: stampRef(state.newStamp) };
   state.tasks[state.selectedDate] = [...(state.tasks[state.selectedDate]||[]), task];
   save(); closeModal(); render();
@@ -511,16 +523,46 @@ function selectDate(key) {
 }
 
 // ── Modal ──────────────────────────────────────────────────────────────────
+// Tracks which task is being edited: { dateKey, taskId } or null
+let _editingTask = null;
+
 function openModal() {
+  _editingTask = null;
   document.getElementById('add-modal').style.display = 'flex';
+  document.getElementById('modal-new-title').textContent = '✦ NEW TASK ✦';
+  document.getElementById('modal-submit-btn').textContent = '+ ADD TASK';
   document.getElementById('new-task-input').value = '';
-  state.newStamp = '⭐';
+  state.newStamp = STAMPS[0] || '⭐';
   renderStampGrid();
-  document.getElementById('stamp-preview').textContent = '⭐';
+  document.getElementById('stamp-preview').innerHTML = stampDisplay(state.newStamp, '24px');
+  setModalTab('new');
   setTimeout(() => document.getElementById('new-task-input').focus(), 100);
 }
+
+function openEditTaskModal(dateKey, taskId) {
+  const task = (state.tasks[dateKey] || []).find(t => t.id === taskId);
+  if (!task) return;
+  _editingTask = { dateKey, taskId };
+  document.getElementById('add-modal').style.display = 'flex';
+  document.getElementById('modal-tab-new').textContent = '✏️ EDIT';
+  document.getElementById('modal-new-title').textContent = '✦ EDIT TASK ✦';
+  document.getElementById('modal-submit-btn').textContent = '✓ SAVE CHANGES';
+  document.getElementById('new-task-input').value = task.text;
+  state.newStamp = task.stamp || '⭐';
+  renderStampGrid();
+  document.getElementById('stamp-preview').innerHTML = stampDisplay(state.newStamp, '24px');
+  // Hide SAVED tab — not relevant when editing
+  document.getElementById('modal-tab-saved').style.display = 'none';
+  setModalTab('new');
+  setTimeout(() => document.getElementById('new-task-input').focus(), 100);
+}
+
 function closeModal() {
   document.getElementById('add-modal').style.display = 'none';
+  // Restore NEW tab label and SAVED tab visibility
+  document.getElementById('modal-tab-new').textContent = '✏️ NEW';
+  document.getElementById('modal-tab-saved').style.display = '';
+  _editingTask = null;
 }
 function closeModalBg(e) {
   if (e.target.id==='add-modal') closeModal();
@@ -715,12 +757,18 @@ function taskCard(task, dateKey) {
         word-break:break-word;">
         ${escHtml(task.text)}
       </span>
+      <!-- edit -->
+      <button onclick="openEditTaskModal('${dateKey}',${task.id})" style="
+        background:none;border:none;color:#FFB3D1;cursor:pointer;
+        font-size:20px;padding:4px;line-height:1;font-family:'VT323',monospace;
+        min-width:32px;min-height:32px;flex-shrink:0;
+      " onmouseenter="this.style.color='#FF2D78'" onmouseleave="this.style.color='#FFB3D1'">✎</button>
       <!-- delete -->
       <button onclick="deleteTask('${dateKey}',${task.id})" style="
         background:none;border:none;color:#FFB3D1;cursor:pointer;
         font-size:24px;padding:4px;line-height:1;font-family:'VT323',monospace;
         min-width:32px;min-height:32px;flex-shrink:0;
-      ">✕</button>
+      " onmouseenter="this.style.color='#FF2D78'" onmouseleave="this.style.color='#FFB3D1'">✕</button>
     </div>`;
 }
 
@@ -838,7 +886,7 @@ function renderCalendar() {
           <span style="font-size:11px;color:#CC0055;letter-spacing:2px;">TOTAL</span>
         </div>
         ${streak>0?`
-        <div style="background:#FFE0EE;border:2px solid #FF2D78;padding:4px 10px;box-shadow:3px 3px 0 #FF2D78;display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;">
+        <div style="background:white;border:2px solid #FF2D78;padding:4px 10px;box-shadow:3px 3px 0 #FF2D78;display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;">
           <span style="font-size:15px;line-height:1;">🔥${streak}</span>
           <span style="font-size:11px;color:#CC0055;letter-spacing:2px;">STREAK</span>
         </div>`:''}
