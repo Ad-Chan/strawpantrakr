@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>STRAWPANTRAKR ✦</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    font-size: 16px;
+  }
+  body {
+    background: #FFD6E8;
+    font-family: 'VT323', monospace;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #FFB3D1; }
+  ::-webkit-scrollbar-thumb { background: #FF2D78; border-radius: 2px; }
+
+  /* ── bg glow ── */
+  .y2k-bg {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  .y2k-bg::before {
+    content: '';
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255,45,120,0.18) 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(177,79,255,0.15) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(0,229,255,0.07) 0%, transparent 60%);
+  }
+
+  /* ── decorative stars ── */
+  .star {
+    position: absolute; pointer-events: none; font-size: 13px;
+    animation: twinkle 2.2s ease-in-out infinite; color: #FF2D78; z-index: 0;
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: 0.18; transform: scale(0.8) rotate(0deg); }
+    50%      { opacity: 1;    transform: scale(1.2) rotate(180deg); }
+  }
+
+  /* ── marquee ── */
+  .marquee-wrap { overflow: hidden; white-space: nowrap; }
+  .marquee { display: inline-block; animation: scroll-left 20s linear infinite; }
+  @keyframes scroll-left {
+    from { transform: translateX(100vw); }
+    to   { transform: translateX(-100%); }
+  }
+
+  /* ── shimmer title ── */
+  .shimmer {
+    background: linear-gradient(90deg, #FF2D78, #FF80B4, #B14FFF, #FF2D78);
+    background-size: 200%;
+    animation: shimmer 2.4s linear infinite;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  @keyframes shimmer { from { background-position: 0% } to { background-position: 200% } }
+
+  /* ── card ── */
+  .card {
+    background: rgba(255,255,255,0.68);
+    border: 2px solid #FF2D78;
+    box-shadow: 4px 4px 0 #FF2D78, 7px 7px 0 rgba(255,45,120,0.18);
+    backdrop-filter: blur(8px);
+  }
+
+  /* ── buttons ── */
+  .btn {
+    cursor: pointer; border: 2px solid #FF2D78;
+    font-family: 'VT323', monospace; font-size: 18px; letter-spacing: 2px;
+    transition: all 0.1s; text-transform: uppercase;
+    box-shadow: 3px 3px 0 #FF2D78; background: white; color: #FF2D78;
+    padding: 6px 16px; line-height: 1.2;
+    -webkit-appearance: none; appearance: none;
+    min-height: 44px; /* touch target */
+  }
+  .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #FF2D78; }
+  .btn.primary { background: #FF2D78; color: white; }
+  .btn.active  { background: #FF2D78; color: white; }
+
+  .nav-btn {
+    cursor: pointer; background: #FF2D78; border: 2px solid #CC0055;
+    color: white; font-size: 22px; font-family: 'VT323',monospace;
+    min-width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 3px 3px 0 #CC0055; transition: all 0.1s;
+    -webkit-appearance: none; appearance: none;
+  }
+  .nav-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #CC0055; }
+
+  /* ── day cell ── */
+  .day-cell {
+    cursor: pointer; transition: background 0.1s; border: 2px solid transparent;
+    min-height: 44px; display: flex; flex-direction: column; align-items: center; padding: 4px 2px 3px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .day-cell:active { background: rgba(255,45,120,0.15) !important; }
+
+  /* ── task row ── */
+  .task-row { animation: popIn 0.18s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes popIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+
+  /* ── stamp picker ── */
+  .stamp-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+    max-height: 180px; overflow-y: auto; padding: 4px;
+  }
+  .stamp-opt {
+    font-size: 22px; text-align: center; cursor: pointer; padding: 4px 2px;
+    border: 2px solid transparent; border-radius: 4px; transition: all 0.1s;
+    min-height: 40px; display: flex; align-items: center; justify-content: center;
+  }
+  .stamp-opt:active, .stamp-opt.chosen { border-color: #FF2D78; background: #FFE0EE; }
+
+  /* ── bottom nav (mobile) ── */
+  .bottom-nav {
+    flex-shrink: 0;
+    left: 0; right: 0; z-index: 100;
+    background: rgba(255,255,255,0.95); border-top: 2px solid #FF2D78;
+    display: flex; backdrop-filter: blur(10px);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .bottom-nav-btn {
+    flex: 1; cursor: pointer; background: none; border: none;
+    font-family: 'VT323',monospace; font-size: 13px; letter-spacing: 1px;
+    color: #CC0055; padding: 10px 4px 8px; display: flex; flex-direction: column;
+    align-items: center; gap: 2px; transition: background 0.1s;
+    min-height: 56px;
+  }
+  .bottom-nav-btn.active { background: #FFE0EE; color: #FF2D78; }
+  .bottom-nav-btn span.icon { font-size: 20px; line-height: 1; }
+
+  /* ── stats task list ── */
+  .stats-task-row {
+    display: flex; align-items: center; gap: 10; padding: 10px 14px;
+    border-bottom: 1px dashed #FFB3D1;
+  }
+
+  /* ── progress bar ── */
+  .pbar-fill { transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+  .bfill { transition: height 0.5s cubic-bezier(.4,0,.2,1); }
+
+  /* ── transition animations ── */
+  @keyframes slideInRight  { from { opacity:0; transform:translateX(40px);  } to { opacity:1; transform:translateX(0); } }
+  @keyframes slideInLeft   { from { opacity:0; transform:translateX(-40px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes slideInUp     { from { opacity:0; transform:translateY(18px);  } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideOutLeft  { from { opacity:1; transform:translateX(0);     } to { opacity:0; transform:translateX(-40px); } }
+  @keyframes slideOutRight { from { opacity:1; transform:translateX(0);     } to { opacity:0; transform:translateX(40px); } }
+  @keyframes fadeOut       { from { opacity:1; } to { opacity:0; } }
+
+  .anim-in-right  { animation: slideInRight  0.22s cubic-bezier(.25,.46,.45,.94) both; }
+  .anim-in-left   { animation: slideInLeft   0.22s cubic-bezier(.25,.46,.45,.94) both; }
+  .anim-in-up     { animation: slideInUp     0.2s  cubic-bezier(.25,.46,.45,.94) both; }
+  .anim-out-left  { animation: slideOutLeft  0.15s cubic-bezier(.55,0,1,.45)     both; pointer-events:none; }
+  .anim-out-right { animation: slideOutRight 0.15s cubic-bezier(.55,0,1,.45)     both; pointer-events:none; }
+  .anim-out-fade  { animation: fadeOut       0.12s ease                          both; pointer-events:none; }
+
+  /* ── panda celebration ── */
+  @keyframes pandaPop {
+    0%   { opacity:0; transform:translate(-50%,-50%) scale(0.3) rotate(-15deg); }
+    40%  { opacity:1; transform:translate(-50%,-50%) scale(1.3) rotate(8deg); }
+    65%  { transform:translate(-50%,-50%) scale(0.95) rotate(-4deg); }
+    80%  { transform:translate(-50%,-50%) scale(1.08) rotate(2deg); }
+    100% { opacity:0; transform:translate(-50%,-50%) scale(1.1) rotate(0deg); }
+  }
+  .panda-burst {
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    font-size:36px; line-height:1;
+    pointer-events:none; z-index:50;
+    animation: pandaPop 0.9s cubic-bezier(.36,.07,.19,.97) forwards;
+    white-space:nowrap;
+  }
+  .modal-bg {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(255,45,120,0.18); backdrop-filter: blur(4px);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .modal-sheet {
+    background: #FFF0F6; border: 2px solid #FF2D78; border-bottom: none;
+    box-shadow: 0 -4px 0 #FF2D78;
+    width: 100%; max-width: 520px;
+    padding: 18px 16px 0;
+    border-radius: 0;
+    max-height: 80dvh; overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  /* ── task history modal ── */
+  @keyframes sheetUp   { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0);    opacity:1; } }
+  @keyframes sheetDown { from { transform:translateY(0);    opacity:1; } to { transform:translateY(100%); opacity:0; } }
+  .history-sheet {
+    background:#FFF0F6; border:2px solid #FF2D78; border-bottom:none;
+    box-shadow:0 -4px 0 #FF2D78;
+    width:100%; max-width:520px;
+    padding:18px 16px 0;
+    max-height:75dvh; display:flex; flex-direction:column;
+    padding-bottom:env(safe-area-inset-bottom,16px);
+    animation: sheetUp 0.25s cubic-bezier(.25,.46,.45,.94) both;
+  }
+  .history-sheet.closing { animation: sheetDown 0.2s cubic-bezier(.55,0,1,.45) both; }
+  .history-list { overflow-y:auto; flex:1; margin-top:10px; -webkit-overflow-scrolling:touch; }
+  .history-row {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 0; border-bottom:1px dashed #FFB3D1;
+  }
+  .history-row:last-child { border-bottom:none; }
+
+  /* ── form inputs ── */
+  input, select, textarea {
+    -webkit-appearance: none; appearance: none; outline: none;
+    font-family: 'VT323', monospace;
+    border-radius: 0;
+  }
+  input:focus { border-color: #FF2D78 !important; }
+
+  /* ── content offset for bottom nav ── */
+  .content-pad { padding: 12px 0 24px; }
+
+  /* ── responsive grid ── */
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+
+  @media (min-width: 640px) {
+    .stamp-grid { grid-template-columns: repeat(10,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="y2k-bg">
+  <!-- Stars -->
+  <div class="star" style="top:7%;left:4%;animation-delay:0s">✦</div>
+  <div class="star" style="top:14%;left:93%;animation-delay:0.6s">✦</div>
+  <div class="star" style="top:44%;left:1.5%;animation-delay:1.3s">✦</div>
+  <div class="star" style="top:71%;left:96%;animation-delay:0.4s">✦</div>
+  <div class="star" style="top:86%;left:7%;animation-delay:1s">✦</div>
+  <div class="star" style="top:30%;left:97%;animation-delay:1.7s">✦</div>
+
+  <!-- Ticker -->
+  <div style="background:#FF2D78;padding:5px 0;border-bottom:2px solid #CC0055;overflow:hidden;position:relative;z-index:10;">
+    <div class="marquee-wrap">
+      <span class="marquee" style="font-size:13px;color:white;letter-spacing:3px;">
+        ✦ STRAWPANTRAKR ✦ YOUR DAILY TASK MANAGER ✦ STAY PRODUCTIVE ✦ XOXO ✦ STRAWPANTRAKR ✦ YOUR DAILY TASK MANAGER ✦ STAY PRODUCTIVE ✦ XOXO ✦
+      </span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div style="padding:10px 16px 10px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:10;flex-wrap:wrap;gap:8px;border-bottom:3px solid #FF2D78;box-shadow:0 3px 0 rgba(255,45,120,0.15);background:rgba(255,214,232,0.95);backdrop-filter:blur(6px);">
+    <div>
+      <div class="shimmer" style="font-family:'Orbitron',monospace;font-size:28px;font-weight:900;letter-spacing:2px;">STRAWPANTRAKR</div>
+      <div style="font-size:14px;color:#FF2D78;letter-spacing:3px;margin-top:-4px;">✦ ngo oi lei leng lui ✦</div>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div id="app-content" style="position:relative;z-index:5;flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:10px 0px 10px;"></div>
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-nav">
+    <button class="bottom-nav-btn active" id="nav-calendar" onclick="switchView('calendar')">
+      <span class="icon">📅</span><span>CALENDAR</span>
+    </button>
+    <button class="bottom-nav-btn" id="nav-day" onclick="switchView('day')">
+      <span class="icon">📋</span><span>TODAY</span>
+    </button>
+    <button class="bottom-nav-btn" id="nav-stats" onclick="switchView('stats')">
+      <span class="icon">📊</span><span>STATS</span>
+    </button>
+    <button class="bottom-nav-btn" id="nav-settings" onclick="switchView('settings')">
+      <span class="icon">⚙️</span><span>SETTINGS</span>
+    </button>
+  </nav>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal-bg" id="add-modal" style="display:none;" onclick="closeModalBg(event)">
+  <div class="modal-sheet">
+
+    <!-- Tab strip -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button id="modal-tab-new"  onclick="setModalTab('new')"
+        class="btn primary" style="flex:1;font-size:16px;padding:7px;">✏️ NEW</button>
+      <button id="modal-tab-saved" onclick="setModalTab('saved')"
+        class="btn" style="flex:1;font-size:16px;padding:7px;">⭐ SAVED</button>
+    </div>
+
+    <!-- NEW tab -->
+    <div id="modal-panel-new">
+      <div style="font-size:14px;color:#FF2D78;letter-spacing:3px;margin-bottom:8px;">✦ NEW TASK ✦</div>
+      <input id="new-task-input" type="text" placeholder="WHAT 2 DO..." inputmode="text"
+        style="width:100%;background:white;border:2px solid #FFB3D1;padding:10px 12px;font-size:20px;color:#CC0055;margin-bottom:10px;box-shadow:2px 2px 0 #FFB3D1;">
+      <div style="font-size:14px;color:#FF2D78;letter-spacing:2px;margin-bottom:6px;">✦ PICK A STAMP</div>
+      <div class="stamp-grid" id="stamp-grid"></div>
+      <div style="font-size:13px;color:#FFB3D1;letter-spacing:1px;margin-top:4px;margin-bottom:10px;">
+        selected: <span id="stamp-preview" style="font-size:22px;vertical-align:middle;">⭐</span>
+      </div>
+      <div style="display:flex;gap:8px;padding-bottom:16px;">
+        <button class="btn" onclick="closeModal()" style="flex:1;">CANCEL</button>
+        <button class="btn primary" onclick="addTask()" style="flex:2;">+ ADD TASK</button>
+      </div>
+    </div>
+
+    <!-- SAVED tab -->
+    <div id="modal-panel-saved" style="display:none;">
+      <div style="font-size:14px;color:#FF2D78;letter-spacing:3px;margin-bottom:8px;">✦ SAVED TASKS ✦</div>
+      <div id="saved-task-list" style="max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+      <button class="btn" onclick="closeModal()" style="width:100%;margin-bottom:16px;">CANCEL</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Task History Modal -->
+<div class="modal-bg" id="history-modal" style="display:none;" onclick="closeHistoryBg(event)">
+  <div class="history-sheet" id="history-sheet">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;">
+      <div>
+        <div style="font-size:13px;color:#FF2D78;letter-spacing:3px;">✦ TASK HISTORY</div>
+        <div id="history-title" style="font-size:20px;color:#CC0055;margin-top:2px;"></div>
+      </div>
+      <button class="btn" onclick="closeHistory()" style="padding:4px 12px;font-size:16px;flex-shrink:0;">✕ CLOSE</button>
+    </div>
+    <div id="history-summary" style="margin-top:8px;font-size:14px;color:#FF2D78;flex-shrink:0;"></div>
+    <div class="history-list" id="history-list"></div>
+    <div style="padding:12px 0;flex-shrink:0;"></div>
+  </div>
+</div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────
+const DAYS   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+const DEFAULT_STAMPS = [
+  "🐼", "🍓", "⭐","🔥","💪","📚","🎯","✅","🏃","🧘","💊","🍎",
+  "💻","📝","🎨","🎵","🌟","💡","🚀","❤️","😊","🌈",
+  "🧹","🛒","💰","🏋️","🤝","📞","✍️","🍳","🚿","😴",
+  "🐾","🌺","☕","🎉","🏆","💎","🌙","⚡","🎮","🧩",
+  "📧","🗓️","🔑","🎁","🌍","🧪","🎓","🏠","🚗","✈️",
+];
+
+let STAMPS = (() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('strawpantrakr-stamps'));
+    return Array.isArray(saved) && saved.length ? saved : [...DEFAULT_STAMPS];
+  } catch { return [...DEFAULT_STAMPS]; }
+})();
+
+function saveStamps() { localStorage.setItem('strawpantrakr-stamps', JSON.stringify(STAMPS)); }
+
+// ── Saved tasks ────────────────────────────────────────────────────────────
+let SAVED_TASKS = (() => {
+  try {
+    const s = JSON.parse(localStorage.getItem('strawpantrakr-saved') || '[]');
+    return Array.isArray(s) ? s : [];
+  } catch { return []; }
+})();
+function saveSavedTasks() { localStorage.setItem('strawpantrakr-saved', JSON.stringify(SAVED_TASKS)); }
+
+const DAYS_IN_MONTH = (y,m) => new Date(y,m+1,0).getDate();
+const FIRST_DOW     = (y,m) => new Date(y,m,1).getDay();
+const DATE_KEY      = (y,m,d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+// ── State ──────────────────────────────────────────────────────────────────
+const now  = new Date();
+let state = {
+  view: 'calendar',
+  year:  now.getFullYear(),
+  month: now.getMonth(),
+  selectedDate: DATE_KEY(now.getFullYear(), now.getMonth(), now.getDate()),
+  tasks: {},
+  newStamp: '⭐',
+};
+
+try { state.tasks = JSON.parse(localStorage.getItem('strawpantrakr-tasks') || '{}'); } catch {}
+
+const TODAY_KEY = DATE_KEY(now.getFullYear(), now.getMonth(), now.getDate());
+
+function save() { localStorage.setItem('strawpantrakr-tasks', JSON.stringify(state.tasks)); }
+function dayTasks(key) { return state.tasks[key] || []; }
+
+// ── Streak ─────────────────────────────────────────────────────────────────
+function getStreak() {
+  let s = 0, d = new Date();
+  while (true) {
+    const k = DATE_KEY(d.getFullYear(), d.getMonth(), d.getDate());
+    const t = state.tasks[k] || [];
+    if (!t.length || !t.every(x => x.done)) break;
+    s++; d.setDate(d.getDate()-1);
+  }
+  return s;
+}
+
+// ── Month stats ────────────────────────────────────────────────────────────
+function monthStats(y, m) {
+  let total=0, done=0;
+  for (let d=1; d<=DAYS_IN_MONTH(y,m); d++) {
+    const t = dayTasks(DATE_KEY(y,m,d));
+    total += t.length; done += t.filter(x=>x.done).length;
+  }
+  return {total,done};
+}
+
+// ── Task CRUD ──────────────────────────────────────────────────────────────
+function addTask() {
+  const input = document.getElementById('new-task-input');
+  const text  = input.value.trim();
+  if (!text) return;
+  const task = { id: Date.now(), text, done: false, stamp: stampRef(state.newStamp) };
+  state.tasks[state.selectedDate] = [...(state.tasks[state.selectedDate]||[]), task];
+  save(); closeModal(); render();
+}
+
+function toggleTask(dateKey, id) {
+  const task = (state.tasks[dateKey]||[]).find(t => t.id===id);
+  const markingDone = task && !task.done;
+
+  if (markingDone) {
+    // Find the task row element and inject the burst before re-rendering
+    const row = document.querySelector(`[data-task-id="${id}"]`);
+    if (row) {
+      const burst = document.createElement('div');
+      burst.className = 'panda-burst';
+      burst.textContent = '🐼👍';
+      row.style.position = 'relative';
+      row.appendChild(burst);
+      // Re-render after animation completes
+      setTimeout(() => {
+        state.tasks[dateKey] = (state.tasks[dateKey]||[]).map(t => t.id===id ? {...t, done:true} : t);
+        save(); render();
+      }, 500);
+      return;
+    }
+  }
+
+  state.tasks[dateKey] = (state.tasks[dateKey]||[]).map(t => t.id===id ? {...t, done:!t.done} : t);
+  save(); render();
+}
+
+function deleteTask(dateKey, id) {
+  state.tasks[dateKey] = (state.tasks[dateKey]||[]).filter(t => t.id!==id);
+  save(); render();
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+
+// Tab order for determining slide direction between views
+const TAB_ORDER = ['calendar', 'day', 'stats', 'settings'];
+
+function animateContent(outClass, inClass, updateFn) {
+  const el = document.getElementById('app-content');
+  // Slide out
+  el.classList.add(outClass);
+  setTimeout(() => {
+    el.classList.remove(outClass);
+    updateFn();               // swap content
+    el.scrollTop = 0;         // reset scroll position
+    el.classList.add(inClass);
+    setTimeout(() => el.classList.remove(inClass), 250);
+  }, 150);
+}
+
+function switchView(v) {
+  const oldIdx = TAB_ORDER.indexOf(state.view);
+  const newIdx = TAB_ORDER.indexOf(v);
+  const goingRight = newIdx > oldIdx;
+
+  state.view = v;
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-'+v).classList.add('active');
+
+  animateContent(
+    goingRight ? 'anim-out-left'  : 'anim-out-right',
+    goingRight ? 'anim-in-right'  : 'anim-in-left',
+    render
+  );
+}
+
+function prevMonth() {
+  if (state.month===0) { state.month=11; state.year--; }
+  else state.month--;
+  animateContent('anim-out-right', 'anim-in-left', render);
+}
+function nextMonth() {
+  if (state.month===11) { state.month=0; state.year++; }
+  else state.month++;
+  animateContent('anim-out-left', 'anim-in-right', render);
+}
+function selectDate(key) {
+  state.selectedDate = key;
+  switchView('day');
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+function openModal() {
+  document.getElementById('add-modal').style.display = 'flex';
+  document.getElementById('new-task-input').value = '';
+  state.newStamp = '⭐';
+  renderStampGrid();
+  document.getElementById('stamp-preview').textContent = '⭐';
+  setTimeout(() => document.getElementById('new-task-input').focus(), 100);
+}
+function closeModal() {
+  document.getElementById('add-modal').style.display = 'none';
+}
+function closeModalBg(e) {
+  if (e.target.id==='add-modal') closeModal();
+}
+
+function renderStampGrid() {
+  const grid = document.getElementById('stamp-grid');
+  if (!grid) return;
+  grid.innerHTML = STAMPS.map((s,i) => {
+    const chosen = stampKey(s) === stampKey(state.newStamp);
+    return `<div class="stamp-opt${chosen?' chosen':''}" onclick="pickStamp(${i})"
+      style="width:36px;height:36px;padding:2px;">
+      ${stampDisplay(s,'28px')}
+    </div>`;
+  }).join('');
+}
+function pickStamp(idx) {
+  state.newStamp = STAMPS[idx];
+  const preview = document.getElementById('stamp-preview');
+  if (preview) preview.innerHTML = stampDisplay(state.newStamp, '28px');
+  renderStampGrid();
+}
+
+// ── Modal tab switching ────────────────────────────────────────────────────
+function setModalTab(tab) {
+  document.getElementById('modal-panel-new').style.display   = tab === 'new'   ? '' : 'none';
+  document.getElementById('modal-panel-saved').style.display = tab === 'saved' ? '' : 'none';
+  document.getElementById('modal-tab-new').className   = 'btn' + (tab === 'new'   ? ' primary' : '');
+  document.getElementById('modal-tab-saved').className = 'btn' + (tab === 'saved' ? ' primary' : '');
+  if (tab === 'saved') renderSavedTaskList();
+}
+
+function renderSavedTaskList() {
+  const el = document.getElementById('saved-task-list');
+  if (!el) return;
+  if (SAVED_TASKS.length === 0) {
+    el.innerHTML = `<div style="text-align:center;color:#FFB3D1;font-size:18px;padding:24px 0;">
+      No saved tasks yet!<br>
+      <span style="font-size:14px;">Add some in ⚙️ Settings</span>
+    </div>`;
+    return;
+  }
+  el.innerHTML = SAVED_TASKS.map((t, idx) => `
+    <div onclick="addSavedTaskToDay(${idx})"
+      style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+             background:white;border:2px solid #FF2D78;border-left:6px solid #FF2D78;
+             box-shadow:3px 3px 0 rgba(255,45,120,0.2);cursor:pointer;"
+      ontouchstart="this.style.background='#FFE0EE'" ontouchend="this.style.background='white'"
+      onmouseenter="this.style.background='#FFE0EE'" onmouseleave="this.style.background='white'">
+      <div style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        ${stampDisplay(t.stamp || '⭐', '26px')}
+      </div>
+      <span style="flex:1;font-size:18px;color:#CC0055;">${escHtml(t.text)}</span>
+      <span style="font-size:20px;color:#FFB3D1;">+</span>
+    </div>
+  `).join('');
+}
+
+function addSavedTaskToDay(idx) {
+  const saved = SAVED_TASKS[idx];
+  if (!saved) return;
+  const task = { id: Date.now(), text: saved.text, done: false, stamp: stampRef(saved.stamp || '⭐') };
+  state.tasks[state.selectedDate] = [...(state.tasks[state.selectedDate] || []), task];
+  save();
+  closeModal();
+  render();
+}
+
+// ── Saved task CRUD (Settings) ─────────────────────────────────────────────
+let _editingSavedIdx = null; // null = adding new, number = editing existing
+
+function openAddSavedTask() {
+  _editingSavedIdx = null;
+  document.getElementById('saved-task-text-input').value = '';
+  state.newStamp = STAMPS[0] || '⭐';
+  renderSavedStampGrid();
+  document.getElementById('saved-stamp-preview').innerHTML = stampDisplay(state.newStamp, '24px');
+  document.getElementById('saved-task-form-title').textContent = '✦ ADD SAVED TASK';
+  document.getElementById('saved-task-form').style.display = '';
+  setTimeout(() => document.getElementById('saved-task-text-input').focus(), 80);
+}
+
+function openEditSavedTask(idx) {
+  const t = SAVED_TASKS[idx];
+  if (!t) return;
+  _editingSavedIdx = idx;
+  document.getElementById('saved-task-text-input').value = t.text;
+  state.newStamp = t.stamp || '⭐';
+  renderSavedStampGrid();
+  document.getElementById('saved-stamp-preview').innerHTML = stampDisplay(state.newStamp, '24px');
+  document.getElementById('saved-task-form-title').textContent = '✦ EDIT SAVED TASK';
+  document.getElementById('saved-task-form').style.display = '';
+  setTimeout(() => document.getElementById('saved-task-text-input').focus(), 80);
+}
+
+function cancelSavedTaskForm() {
+  document.getElementById('saved-task-form').style.display = 'none';
+  _editingSavedIdx = null;
+}
+
+function commitSavedTask() {
+  const text = document.getElementById('saved-task-text-input').value.trim();
+  if (!text) return;
+  const entry = { id: Date.now(), text, stamp: stampRef(state.newStamp) };
+  if (_editingSavedIdx !== null) {
+    SAVED_TASKS[_editingSavedIdx] = { ...SAVED_TASKS[_editingSavedIdx], text, stamp: stampRef(state.newStamp) };
+  } else {
+    SAVED_TASKS.push(entry);
+  }
+  saveSavedTasks();
+  cancelSavedTaskForm();
+  render();
+}
+
+function deleteSavedTask(idx) {
+  if (!confirm(`Remove "${SAVED_TASKS[idx]?.text}" from saved tasks?`)) return;
+  SAVED_TASKS.splice(idx, 1);
+  saveSavedTasks();
+  render();
+}
+
+function renderSavedStampGrid() {
+  const grid = document.getElementById('saved-stamp-grid');
+  if (!grid) return;
+  grid.innerHTML = STAMPS.map((s, i) => {
+    const chosen = stampKey(s) === stampKey(state.newStamp);
+    return `<div class="stamp-opt${chosen ? ' chosen' : ''}" onclick="pickSavedStamp(${i})"
+      style="width:36px;height:36px;padding:2px;">
+      ${stampDisplay(s, '28px')}
+    </div>`;
+  }).join('');
+}
+
+function pickSavedStamp(idx) {
+  state.newStamp = STAMPS[idx];
+  document.getElementById('saved-stamp-preview').innerHTML = stampDisplay(state.newStamp, '24px');
+  renderSavedStampGrid();
+}
+function pct(done, total) { return total ? Math.round(done/total*100) : 0; }
+
+// Renders an SVG heart that fills bottom-up based on fraction (0–1).
+// size: pixel width/height of the square SVG.
+// fillColor: filled portion color. outlineColor: the empty outline.
+function heartSVG(fraction, size, fillColor, outlineColor) {
+  fraction = Math.max(0, Math.min(1, fraction));
+  const id = 'hc' + Math.random().toString(36).slice(2,8);
+  // Heart path defined in a 100×90 viewBox.
+  // Fills from bottom (y=90) upward by (1-fraction)*90.
+  const clipY = (1 - fraction) * 90;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 95" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;">
+    <defs>
+      <clipPath id="${id}">
+        <rect x="0" y="${clipY}" width="100" height="${90 - clipY}"/>
+      </clipPath>
+    </defs>
+    <!-- outline heart (always visible) -->
+    <path d="M50 85 C50 85 10 55 10 30 C10 16 20 8 30 8 C38 8 46 13 50 20 C54 13 62 8 70 8 C80 8 90 16 90 30 C90 55 50 85 50 85 Z"
+      fill="none" stroke="${outlineColor}" stroke-width="3" stroke-linejoin="round"/>
+    <!-- filled heart clipped from bottom -->
+    <path d="M50 85 C50 85 10 55 10 30 C10 16 20 8 30 8 C38 8 46 13 50 20 C54 13 62 8 70 8 C80 8 90 16 90 30 C90 55 50 85 50 85 Z"
+      fill="${fillColor}" clip-path="url(#${id})"/>
+  </svg>`;
+}
+
+function taskCard(task, dateKey) {
+  const borderCol = '#FF2D78';
+  return `
+    <div class="task-row" data-task-id="${task.id}" style="
+      background:${task.done?'#FFE0EE':'white'};
+      border:2px solid ${borderCol};
+      border-left:6px solid ${borderCol};
+      padding:10px 10px;
+      display:flex;align-items:center;gap:10px;
+      box-shadow:${task.done?'none':'3px 3px 0 rgba(255,45,120,0.2)'};
+      opacity:${task.done?0.7:1};
+    ">
+      <!-- stamp -->
+      <div style="width:26px;height:26px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${stampDisplay(task.stamp, '24px')}</div>
+      <!-- checkbox -->
+      <div onclick="toggleTask('${dateKey}',${task.id})" style="
+        width:24px;height:24px;flex-shrink:0;cursor:pointer;
+        background:${task.done?'#FF2D78':'white'};
+        border:2px solid #FF2D78;
+        display:flex;align-items:center;justify-content:center;
+        font-size:14px;color:white;font-weight:700;
+        min-width:24px;
+      ">${task.done?'✓':''}</div>
+      <!-- text -->
+      <span style="flex:1;font-size:18px;line-height:1.2;
+        text-decoration:${task.done?'line-through':'none'};
+        color:${task.done?'#FFB3D1':'#CC0055'};
+        word-break:break-word;">
+        ${escHtml(task.text)}
+      </span>
+      <!-- delete -->
+      <button onclick="deleteTask('${dateKey}',${task.id})" style="
+        background:none;border:none;color:#FFB3D1;cursor:pointer;
+        font-size:24px;padding:4px;line-height:1;font-family:'VT323',monospace;
+        min-width:32px;min-height:32px;flex-shrink:0;
+      ">✕</button>
+    </div>`;
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Stamp display helper ───────────────────────────────────────────────────
+
+// Resolve a stamp value stored on a task to its full object (for image stamps).
+// Tasks store image stamps as their id string ("img_1234") — look up from STAMPS.
+function resolveStamp(stamp) {
+  if (!stamp) return '⭐';
+  // Already a full image object (legacy / in-memory)
+  if (typeof stamp === 'object' && stamp.type === 'image') return stamp;
+  // Id reference string — look up in STAMPS registry
+  if (typeof stamp === 'string' && stamp.startsWith('img_')) {
+    return STAMPS.find(s => typeof s === 'object' && s.id === stamp) || '🖼️';
+  }
+  return stamp;
+}
+
+// Returns an HTML string for a stamp — either emoji text or an <img>.
+// size: css size string e.g. '22px', '11px'
+function stampDisplay(stamp, size) {
+  const resolved = resolveStamp(stamp);
+  if (typeof resolved === 'object' && resolved.type === 'image') {
+    return `<img src="${resolved.dataUrl}" alt="${escHtml(resolved.label||'')}"
+      style="width:${size};height:${size};object-fit:cover;border-radius:2px;display:block;flex-shrink:0;" loading="lazy">`;
+  }
+  const s = typeof resolved === 'string' ? resolved : '⭐';
+  return `<span style="font-size:${size};line-height:1;display:inline-block;">${s}</span>`;
+}
+
+// Returns a stable string key for a stamp (for dedup / comparison)
+function stampKey(stamp) {
+  const resolved = resolveStamp(stamp);
+  if (typeof resolved === 'object' && resolved.type === 'image') return 'img:' + resolved.id;
+  return typeof resolved === 'string' ? resolved : '⭐';
+}
+
+// Converts a stamp to the compact form stored on task records:
+// emoji → emoji string, image object → its id string
+function stampRef(stamp) {
+  if (!stamp) return '⭐';
+  if (typeof stamp === 'object' && stamp.type === 'image') return stamp.id;
+  return stamp;
+}
+
+// ── Views ──────────────────────────────────────────────────────────────────
+function renderCalendar() {
+  const {year, month} = state;
+  const dim   = DAYS_IN_MONTH(year, month);
+  const first = FIRST_DOW(year, month);
+  const ms    = monthStats(year, month);
+  const streak = getStreak();
+
+  let dayCells = '';
+  for (let i=0; i<first; i++) dayCells += `<div></div>`;
+  for (let d=1; d<=dim; d++) {
+    const key  = DATE_KEY(year, month, d);
+    const dt   = dayTasks(key);
+    const isSel = key===state.selectedDate;
+    const isToday = key===TODAY_KEY;
+    const done = dt.filter(x=>x.done).length;
+    // Deduplicate by stamp key, take first 3
+    const seenKeys = new Set();
+    const stamps = [];
+    for (const t of dt) {
+      const k = stampKey(t.stamp||'⭐');
+      if (!seenKeys.has(k)) { seenKeys.add(k); stamps.push(t.stamp||'⭐'); }
+      if (stamps.length >= 3) break;
+    }
+
+    const fraction = dt.length ? done / dt.length : 0;
+    dayCells += `
+      <div class="day-cell" onclick="selectDate('${key}')"
+        style="background:${isSel?'#FF2D78':isToday?'#FFD6E8':'transparent'};
+               border:2px solid ${isSel?'#CC0055':isToday?'#FF2D78':'transparent'};
+               min-height:56px;">
+        <span style="font-size:15px;color:${isSel?'white':'#CC0055'};font-family:'VT323',monospace;line-height:1.1;">${d}</span>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1px;min-height:16px;align-items:center;">
+          ${stamps.map(s=>stampDisplay(s,'11px')).join('')}
+          ${dt.length>3?`<span style="font-size:9px;color:${isSel?'white':'#FF2D78'};line-height:1.3;">+${dt.length-3}</span>`:''}
+        </div>
+      </div>`;
+  }
+
+  const rate = ms.total ? pct(ms.done, ms.total) : 0;
+
+  return `
+    <div style="padding:0 12px;" class="content-pad">
+      <!-- Month nav -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <button class="nav-btn" onclick="prevMonth()">◄</button>
+        <div style="text-align:center;">
+          <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:#FF2D78;letter-spacing:1px;">${MONTHS[month].toUpperCase()}</div>
+          <div style="font-size:14px;color:#B14FFF;letter-spacing:3px;">${year}</div>
+        </div>
+        <button class="nav-btn" onclick="nextMonth()">►</button>
+      </div>
+
+      <!-- Stat pills row -->
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+        <div style="background:white;border:2px solid #FF2D78;padding:4px 10px;box-shadow:3px 3px 0 #FF2D78;display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;">
+          <span style="font-family:'Orbitron',monospace;font-size:15px;font-weight:900;color:#FF2D78;line-height:1;">${rate}%</span>
+          <span style="font-size:11px;color:#CC0055;letter-spacing:2px;">RATE</span>
+        </div>
+        <div style="background:white;border:2px solid #FF2D78;padding:4px 10px;box-shadow:3px 3px 0 #FF2D78;display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;">
+          <span style="font-family:'Orbitron',monospace;font-size:15px;font-weight:900;color:#FF2D78;line-height:1;">${ms.done}</span>
+          <span style="font-size:11px;color:#CC0055;letter-spacing:2px;">DONE</span>
+        </div>
+        <div style="background:white;border:2px solid #FF2D78;padding:4px 10px;box-shadow:3px 3px 0 #FF2D78;display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;">
+          <span style="font-family:'Orbitron',monospace;font-size:15px;font-weight:900;color:#FF2D78;line-height:1;">${ms.total}</span>
+          <span style="font-size:11px;color:#CC0055;letter-spacing:2px;">TOTAL</span>
+        </div>
+        ${streak>0?`
+        <div style="background:#FFE0EE;border:2px solid #FF2D78;padding:4px 10px;box-shadow:3px 3px 0 #FF2D78;display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;">
+          <span style="font-size:15px;line-height:1;">🔥${streak}</span>
+          <span style="font-size:11px;color:#CC0055;letter-spacing:2px;">STREAK</span>
+        </div>`:''}
+      </div>
+
+      <div class="card" style="padding:12px;">
+        <!-- Day headers -->
+        <div class="cal-grid" style="margin-bottom:4px;">
+          ${DAYS.map(d=>`<div style="text-align:center;font-size:13px;color:#FF2D78;padding:3px 0;border-bottom:2px solid #FF2D78;">${d[0]}</div>`).join('')}
+        </div>
+        <!-- Day grid -->
+        <div class="cal-grid">${dayCells}</div>
+      </div>
+    </div>`;
+}
+
+function renderDay() {
+  const key  = state.selectedDate;
+  const dt   = dayTasks(key);
+  const done = dt.filter(x=>x.done).length;
+  const dateObj = new Date(key+'T12:00:00');
+
+  return `
+    <div style="padding:0 12px;" class="content-pad">
+      <!-- Date header -->
+      <div class="card" style="padding:14px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <!-- Heart progress -->
+          <div style="flex-shrink:0;">
+            ${dt.length
+              ? heartSVG(done/dt.length, 72, '#FF2D78', '#FFB3D1')
+              : heartSVG(0, 72, '#FF2D78', '#FFB3D1')
+            }
+          </div>
+          <!-- Date + count -->
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:#B14FFF;">
+              ${dateObj.toLocaleDateString('en-US',{weekday:'long'}).toUpperCase()}
+            </div>
+            <div style="font-size:18px;color:#FF2D78;margin-top:2px;line-height:1.2;">
+              ${dateObj.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}
+            </div>
+            ${dt.length?`
+            <div style="margin-top:6px;display:flex;align-items:baseline;gap:6px;">
+              <span style="font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#FF2D78;">${pct(done,dt.length)}%</span>
+              <span style="font-size:14px;color:#CC0055;">${done}/${dt.length} done</span>
+            </div>`:`<div style="margin-top:6px;font-size:14px;color:#FFB3D1;">no tasks yet</div>`}
+          </div>
+        </div>
+      </div>
+
+      <!-- Task list -->
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+        ${dt.length===0?`
+          <div style="text-align:center;color:#FFB3D1;font-size:20px;padding:28px 0;">
+            <div>✦ NO TASKS YET ✦</div>
+            <div style="font-size:14px;margin-top:6px;color:#FFADD0;">tap + ADD below, bestie</div>
+          </div>`
+        : dt.map(t=>taskCard(t,key)).join('')}
+      </div>
+
+      <!-- Add button -->
+      <button class="btn primary" onclick="openModal()" style="width:100%;font-size:20px;padding:12px;">
+        ✦ + ADD TASK
+      </button>
+    </div>`;
+}
+
+function renderStats() {
+  // Build per-task-name aggregation across all days
+  const taskMap = {}; // stampKey+text => {stamp, text, total, done}
+  Object.values(state.tasks).forEach(arr => {
+    (arr||[]).forEach(t => {
+      const sk  = stampKey(t.stamp||'⭐');
+      const key = sk + '|' + t.text.toLowerCase().trim();
+      if (!taskMap[key]) taskMap[key] = {stamp: t.stamp||'⭐', text: t.text, total:0, done:0};
+      taskMap[key].total++;
+      if (t.done) taskMap[key].done++;
+    });
+  });
+  const taskList = Object.values(taskMap).sort((a,b)=>b.total-a.total);
+
+  // Last 7 days
+  const last7 = Array.from({length:7},(_,i)=>{
+    const d = new Date(); d.setDate(d.getDate()-(6-i));
+    const k = DATE_KEY(d.getFullYear(),d.getMonth(),d.getDate());
+    const t = dayTasks(k);
+    return {label:DAYS[d.getDay()],total:t.length,done:t.filter(x=>x.done).length,key:k};
+  });
+
+  let totalAll=0,doneAll=0,activeDays=0,perfectDays=0;
+  Object.values(state.tasks).forEach(arr=>{
+    if(arr?.length){activeDays++;totalAll+=arr.length;doneAll+=arr.filter(x=>x.done).length;if(arr.every(x=>x.done))perfectDays++;}
+  });
+
+  const maxBar = Math.max(...last7.map(x=>x.total),1);
+
+  return `
+    <div style="padding:0 12px;" class="content-pad">
+
+      <!-- 7-day hearts -->
+      <div class="card" style="padding:14px;margin-bottom:14px;">
+        <div style="font-size:13px;color:#FF2D78;letter-spacing:3px;margin-bottom:4px;">✦ LAST 7 DAYS</div>
+        <div style="font-size:14px;color:#CC0055;margin-bottom:14px;">${last7.reduce((a,b)=>a+b.done,0)} of ${last7.reduce((a,b)=>a+b.total,0)} done</div>
+        <div style="display:flex;align-items:flex-end;gap:4px;">
+          ${last7.map(({label,total,done,key})=>{
+            const fraction = total ? done/total : 0;
+            const isSel = key===state.selectedDate;
+            const fillCol = isSel ? '#B14FFF' : '#FF2D78';
+            const outlineCol = isSel ? '#D090FF' : '#FFB3D1';
+            return `
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;"
+                   onclick="selectDate('${key}');switchView('day');">
+                <div style="font-size:11px;color:${isSel?'#B14FFF':'#CC0055'};letter-spacing:0.5px;white-space:nowrap;">
+                  ${total?`${done}/${total}`:'—'}
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                  ${heartSVG(fraction, 42, fillCol, outlineCol)}
+                </div>
+                <div style="font-size:13px;color:${isSel?'#B14FFF':'#CC0055'};letter-spacing:1px;font-weight:${isSel?700:400};">${label}</div>
+                <div style="font-size:11px;color:${fraction===1?'#FF2D78':'#FFB3D1'};letter-spacing:0;">${total?Math.round(fraction*100)+'%':''}</div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- All-time summary cards -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+        ${[
+          {label:'DONE',   value:doneAll,     color:'#FF2D78'},
+          {label:'DAYS',   value:activeDays,  color:'#B14FFF'},
+          {label:'PERFECT',value:perfectDays, color:'#00C9A7'},
+        ].map(s=>`
+          <div class="card" style="padding:12px 8px;text-align:center;">
+            <div style="font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:${s.color};">${s.value}</div>
+            <div style="font-size:11px;color:#CC0055;letter-spacing:1px;margin-top:2px;">${s.label}</div>
+          </div>`).join('')}
+      </div>
+
+      <!-- Per-task aggregation -->
+      <div class="card" style="padding:14px;">
+        <div style="font-size:13px;color:#FF2D78;letter-spacing:3px;margin-bottom:14px;">✦ BY TASK</div>
+        ${taskList.length===0?`<div style="font-size:18px;color:#FFB3D1;text-align:center;padding:16px 0;">No tasks recorded yet!</div>`:
+          taskList.map((t, idx)=>{
+            // Store reference for history modal (avoids encoding image data in onclick)
+            window._statsTaskList = taskList;
+            return `
+            <div onclick="openTaskHistoryByIdx(${idx})"
+              style="margin-bottom:14px;cursor:pointer;padding:6px 8px;margin-left:-8px;margin-right:-8px;transition:background 0.1s;"
+              onmouseenter="this.style.background='rgba(255,45,120,0.06)'"
+              onmouseleave="this.style.background=''"
+              ontouchstart="this.style.background='rgba(255,45,120,0.06)'"
+              ontouchend="this.style.background=''">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:8px;">
+                <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+                  <div style="width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                    ${stampDisplay(t.stamp,'26px')}
+                  </div>
+                  <span style="font-size:16px;color:#CC0055;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    ${escHtml(t.text)}
+                  </span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                  <span style="font-size:15px;color:#FF2D78;font-family:'Orbitron',monospace;font-weight:700;">
+                    ${t.done}/${t.total}
+                  </span>
+                  <span style="font-size:16px;color:#FFB3D1;">›</span>
+                </div>
+              </div>
+              <div style="height:8px;background:#FFD6E8;border:2px solid #FFB3D1;position:relative;">
+                <div class="pbar-fill" style="position:absolute;inset:0;width:${pct(t.done,t.total)}%;background:linear-gradient(90deg,#FF2D78,#FF80B4);"></div>
+              </div>
+              <div style="font-size:12px;color:#FFB3D1;margin-top:2px;letter-spacing:1px;">${pct(t.done,t.total)}% COMPLETION</div>
+            </div>`;
+          }).join('')}
+      </div>
+    </div>`;
+}
+
+// ── Task History Modal ─────────────────────────────────────────────────────
+function openTaskHistoryByIdx(idx) {
+  const t = (window._statsTaskList || [])[idx];
+  if (!t) return;
+  openTaskHistoryForTask(t.stamp, t.text);
+}
+
+function openTaskHistory(stampEscaped, textEscaped) {
+  // Legacy path (emoji stamps passed as attribute strings)
+  const stamp = stampEscaped;
+  const text  = textEscaped.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
+  openTaskHistoryForTask(stamp, text);
+}
+
+function openTaskHistoryForTask(stamp, text) {
+  const mapKey = stampKey(stamp) + '|' + text.toLowerCase().trim();
+
+  // Gather every instance across all dates
+  const instances = [];
+  Object.entries(state.tasks).forEach(([dateKey, arr]) => {
+    (arr||[]).forEach(t => {
+      const k = stampKey(t.stamp||'⭐') + '|' + t.text.toLowerCase().trim();
+      if (k === mapKey) instances.push({ dateKey, done: t.done });
+    });
+  });
+  // Sort newest first
+  instances.sort((a,b) => b.dateKey.localeCompare(a.dateKey));
+
+  const totalDone = instances.filter(x=>x.done).length;
+
+  const titleEl = document.getElementById('history-title');
+  titleEl.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;">
+    ${stampDisplay(stamp,'20px')} ${escHtml(text)}
+  </span>`;
+  document.getElementById('history-summary').textContent =
+    `${totalDone} of ${instances.length} completed  ·  ${instances.length ? Math.round(totalDone/instances.length*100) : 0}% rate`;
+
+  document.getElementById('history-list').innerHTML = instances.length === 0
+    ? `<div style="text-align:center;color:#FFB3D1;font-size:18px;padding:24px 0;">No history yet!</div>`
+    : instances.map(({dateKey, done}) => {
+        const d = new Date(dateKey + 'T12:00:00');
+        const label = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric'});
+        return `
+          <div class="history-row">
+            <div style="width:22px;height:22px;flex-shrink:0;
+              background:${done?'#FF2D78':'white'};
+              border:2px solid #FF2D78;
+              display:flex;align-items:center;justify-content:center;
+              font-size:13px;color:white;font-weight:700;">
+              ${done?'✓':''}
+            </div>
+            <span style="flex:1;font-size:17px;color:${done?'#CC0055':'#FFB3D1'};
+              text-decoration:${done?'none':'line-through'};">${label}</span>
+            <span style="font-size:13px;font-family:'Orbitron',monospace;font-weight:700;
+              color:${done?'#FF2D78':'#FFB3D1'};">${done?'DONE':'MISS'}</span>
+          </div>`;
+      }).join('');
+
+  const modal = document.getElementById('history-modal');
+  const sheet = document.getElementById('history-sheet');
+  sheet.classList.remove('closing');
+  modal.style.display = 'flex';
+}
+
+function closeHistory() {
+  const sheet = document.getElementById('history-sheet');
+  sheet.classList.add('closing');
+  setTimeout(() => {
+    document.getElementById('history-modal').style.display = 'none';
+    sheet.classList.remove('closing');
+  }, 200);
+}
+
+function closeHistoryBg(e) {
+  if (e.target.id === 'history-modal') closeHistory();
+}
+function render() {
+  const el = document.getElementById('app-content');
+  let html='';
+  if (state.view==='calendar') html=renderCalendar();
+  else if (state.view==='day')  html=renderDay();
+  else if (state.view==='stats') html=renderStats();
+  else if (state.view==='settings') html=renderSettings();
+  el.innerHTML = html;
+}
+
+// ── Settings: Export ───────────────────────────────────────────────────────
+function exportData() {
+  // Sanitise task records: image stamps stored as full objects (legacy) → id string
+  const cleanTasks = {};
+  for (const [date, arr] of Object.entries(state.tasks)) {
+    cleanTasks[date] = (arr || []).map(t => ({
+      ...t,
+      stamp: stampRef(t.stamp),
+    }));
+  }
+  // Sanitise saved tasks the same way
+  const cleanSaved = SAVED_TASKS.map(t => ({ ...t, stamp: stampRef(t.stamp) }));
+
+  const payload = {
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    tasks: cleanTasks,
+    stamps: STAMPS,        // full image registry (dataUrls live here only)
+    savedTasks: cleanSaved,
+  };
+  const json   = JSON.stringify(payload, null, 2);
+  const blob   = new Blob([json], { type: 'text/plain;charset=utf-8' });
+  const url    = URL.createObjectURL(blob);
+  const date   = new Date().toISOString().slice(0,10);
+  const a      = document.createElement('a');
+  a.href       = url;
+  a.download   = `strawpantrakr-backup-${date}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  showSettingsMsg('✦ backup downloaded!', '#6EE7B7');
+}
+
+// ── Settings: Import ───────────────────────────────────────────────────────
+function triggerImport() {
+  document.getElementById('import-file-input').click();
+}
+
+function handleImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const payload = JSON.parse(e.target.result);
+      if (!payload.tasks || typeof payload.tasks !== 'object') throw new Error('bad format');
+      const dayCount  = Object.keys(payload.tasks).length;
+      const taskCount = Object.values(payload.tasks).reduce((s,a)=>s+a.length,0);
+      if (!confirm(`Import ${taskCount} tasks across ${dayCount} days?\n\nThis will REPLACE all current data.`)) {
+        input.value = '';
+        return;
+      }
+      state.tasks = payload.tasks;
+      // Migrate v1: task.stamp may be a full image object — flatten to id ref
+      for (const arr of Object.values(state.tasks)) {
+        for (const t of (arr || [])) {
+          if (typeof t.stamp === 'object' && t.stamp?.type === 'image') {
+            t.stamp = t.stamp.id || '⭐';
+          }
+        }
+      }
+      save();
+      if (Array.isArray(payload.stamps) && payload.stamps.length) {
+        STAMPS.length = 0;
+        payload.stamps.forEach(s => STAMPS.push(s));
+        saveStamps();
+      }
+      if (Array.isArray(payload.savedTasks)) {
+        SAVED_TASKS.length = 0;
+        payload.savedTasks.forEach(t => SAVED_TASKS.push(t));
+        saveSavedTasks();
+      }
+      input.value = '';
+      showSettingsMsg(`✦ imported ${taskCount} tasks across ${dayCount} days!`, '#FF2D78');
+      render();
+    } catch {
+      input.value = '';
+      showSettingsMsg('✕ invalid file — please use a strawpantrakr backup .txt', '#FF4444');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showSettingsMsg(msg, color) {
+  const el = document.getElementById('settings-msg');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = color;
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; }, 3000);
+}
+
+// ── Settings: Stamp management ─────────────────────────────────────────────
+function addStampFromInput() {
+  const input = document.getElementById('new-stamp-input');
+  const raw   = input.value.trim();
+  if (!raw) return;
+  const segs  = [...new Intl.Segmenter().segment(raw)];
+  const stamp = segs[0]?.segment || raw[0];
+  if (STAMPS.some(s => stampKey(s) === stampKey(stamp))) {
+    showSettingsMsg('✦ stamp already exists!', '#FFB3D1');
+    input.value = '';
+    return;
+  }
+  STAMPS.push(stamp);
+  saveStamps();
+  input.value = '';
+  render();
+}
+
+function triggerImageStamp() {
+  document.getElementById('stamp-image-input').click();
+}
+
+function handleImageStamp(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    showSettingsMsg('✕ please choose an image file', '#FF4444');
+    input.value = '';
+    return;
+  }
+  const label = file.name.replace(/\.[^.]+$/, '').slice(0, 24);
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    // Resize to max 64px to keep localStorage usage small
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 64;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/png');
+      const id = 'img_' + Date.now();
+      const stamp = { type: 'image', id, dataUrl, label };
+      STAMPS.push(stamp);
+      saveStamps();
+      input.value = '';
+      render();
+      showSettingsMsg(`✦ "${label}" added!`, '#FF2D78');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function deleteStamp(idx) {
+  const stamp = STAMPS[idx];
+  if (stamp === undefined) return;
+  const label = typeof stamp === 'object' ? (stamp.label || 'image') : stamp;
+  const inUse = Object.values(state.tasks).some(arr => arr.some(t => stampKey(t.stamp) === stampKey(stamp)));
+  const msg = inUse
+    ? `"${label}" is used by existing tasks. Remove it from the stamp picker anyway?`
+    : `Remove "${label}" from the stamp picker?`;
+  if (!confirm(msg)) return;
+  STAMPS.splice(idx, 1);
+  if (stampKey(state.newStamp) === stampKey(stamp)) state.newStamp = STAMPS[0] || '⭐';
+  saveStamps();
+  render();
+}
+
+function resetStamps() {
+  if (!confirm('Reset stamps to the default set? Your custom stamps will be removed.')) return;
+  STAMPS.length = 0;
+  DEFAULT_STAMPS.forEach(s => STAMPS.push(s));
+  saveStamps();
+  render();
+}
+function renderSettings() {
+  // Count stats for display
+  const dayCount  = Object.keys(state.tasks).length;
+  const taskCount = Object.values(state.tasks).reduce((s,a)=>s+a.length,0);
+  const doneCount = Object.values(state.tasks).reduce((s,a)=>s+a.filter(t=>t.done).length,0);
+  const exportDate = new Date().toISOString().slice(0,10);
+
+  return `
+    <div style="padding:0 12px;" class="content-pad">
+
+      <!-- Stamp management -->
+      <div class="card" style="padding:18px;margin-bottom:14px;">
+        <div style="font-size:13px;color:#FF2D78;letter-spacing:3px;margin-bottom:10px;">✦ MY STAMPS</div>
+        <p style="font-size:15px;color:#CC0055;line-height:1.4;margin-bottom:12px;">
+          Tap any stamp to remove it. Add emoji or upload an image below.
+        </p>
+
+        <!-- Current stamps grid -->
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+          ${STAMPS.map((s,i) => `
+            <div onclick="deleteStamp(${i})"
+              style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+                     background:white;border:2px solid #FFB3D1;cursor:pointer;position:relative;
+                     box-shadow:2px 2px 0 #FFB3D1;transition:all 0.1s;overflow:hidden;"
+              onmouseenter="this.style.borderColor='#FF2D78';this.style.boxShadow='2px 2px 0 #FF2D78'"
+              onmouseleave="this.style.borderColor='#FFB3D1';this.style.boxShadow='2px 2px 0 #FFB3D1'"
+              ontouchstart="this.style.borderColor='#FF2D78'" ontouchend="this.style.borderColor='#FFB3D1'"
+              title="${typeof s==='object'?escHtml(s.label||'image'):'tap to remove'}">
+              ${stampDisplay(s,'30px')}
+              <span style="position:absolute;top:-4px;right:-4px;background:#FF2D78;color:white;
+                           border-radius:50%;width:14px;height:14px;font-size:9px;line-height:14px;
+                           text-align:center;font-family:monospace;pointer-events:none;">✕</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Add emoji stamp -->
+        <div style="font-size:12px;color:#FF2D78;letter-spacing:2px;margin-bottom:6px;">ADD EMOJI</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <input id="new-stamp-input" type="text" inputmode="text" placeholder="paste emoji…"
+            style="flex:1;background:white;border:2px solid #FFB3D1;padding:8px 10px;
+                   font-size:22px;color:#CC0055;box-shadow:2px 2px 0 #FFB3D1;"
+            onkeydown="if(event.key==='Enter') addStampFromInput()">
+          <button class="btn primary" onclick="addStampFromInput()" style="font-size:16px;padding:8px 14px;">+ ADD</button>
+        </div>
+
+        <!-- Add image stamp -->
+        <div style="font-size:12px;color:#FF2D78;letter-spacing:2px;margin-bottom:6px;">ADD IMAGE</div>
+        <input type="file" id="stamp-image-input" accept="image/*" style="display:none;" onchange="handleImageStamp(this)">
+        <button class="btn primary" onclick="triggerImageStamp()"
+          style="width:100%;font-size:17px;padding:9px;margin-bottom:10px;">
+          🖼 UPLOAD IMAGE STAMP
+        </button>
+
+        <!-- Reset -->
+        <button class="btn" onclick="resetStamps()"
+          style="width:100%;font-size:17px;padding:9px;">
+          ↺ RESET TO DEFAULTS (${DEFAULT_STAMPS.length} stamps)
+        </button>
+      </div>
+
+      <!-- Saved tasks -->
+      <div class="card" style="padding:18px;margin-bottom:14px;">
+        <div style="font-size:13px;color:#FF2D78;letter-spacing:3px;margin-bottom:10px;">✦ SAVED TASKS</div>
+        <p style="font-size:15px;color:#CC0055;line-height:1.4;margin-bottom:12px;">
+          Save frequently-used tasks for quick-add when logging your day.
+        </p>
+
+        <!-- Saved task list -->
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+          ${SAVED_TASKS.length === 0
+            ? `<div style="text-align:center;color:#FFB3D1;font-size:16px;padding:14px 0;">No saved tasks yet</div>`
+            : SAVED_TASKS.map((t, idx) => `
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;
+                           background:white;border:2px solid #FFB3D1;border-left:5px solid #FF2D78;">
+                <div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  ${stampDisplay(t.stamp || '⭐', '24px')}
+                </div>
+                <span style="flex:1;font-size:17px;color:#CC0055;word-break:break-word;">${escHtml(t.text)}</span>
+                <button onclick="openEditSavedTask(${idx})"
+                  style="background:none;border:none;color:#FFB3D1;font-size:18px;cursor:pointer;padding:4px;font-family:'VT323',monospace;"
+                  onmouseenter="this.style.color='#FF2D78'" onmouseleave="this.style.color='#FFB3D1'">✎</button>
+                <button onclick="deleteSavedTask(${idx})"
+                  style="background:none;border:none;color:#FFB3D1;font-size:20px;cursor:pointer;padding:4px;font-family:'VT323',monospace;"
+                  onmouseenter="this.style.color='#FF2D78'" onmouseleave="this.style.color='#FFB3D1'">✕</button>
+              </div>`).join('')
+          }
+        </div>
+
+        <!-- Add / Edit form (hidden until triggered) -->
+        <div id="saved-task-form" style="display:none;background:#FFE0EE;border:2px dashed #FF2D78;padding:14px;margin-bottom:10px;">
+          <div id="saved-task-form-title" style="font-size:13px;color:#FF2D78;letter-spacing:2px;margin-bottom:8px;">✦ ADD SAVED TASK</div>
+          <input id="saved-task-text-input" type="text" inputmode="text" placeholder="task name…"
+            style="width:100%;background:white;border:2px solid #FFB3D1;padding:8px 10px;font-size:18px;color:#CC0055;margin-bottom:10px;box-shadow:2px 2px 0 #FFB3D1;"
+            onkeydown="if(event.key==='Enter') commitSavedTask()">
+          <div style="font-size:12px;color:#FF2D78;letter-spacing:2px;margin-bottom:6px;">STAMP</div>
+          <div class="stamp-grid" id="saved-stamp-grid" style="max-height:130px;"></div>
+          <div style="font-size:13px;color:#FFB3D1;margin-top:4px;margin-bottom:10px;">
+            selected: <span id="saved-stamp-preview" style="vertical-align:middle;">${stampDisplay(STAMPS[0]||'⭐','22px')}</span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn" onclick="cancelSavedTaskForm()" style="flex:1;font-size:15px;padding:7px;">CANCEL</button>
+            <button class="btn primary" onclick="commitSavedTask()" style="flex:2;font-size:15px;padding:7px;">✓ SAVE</button>
+          </div>
+        </div>
+
+        <button class="btn primary" onclick="openAddSavedTask()" style="width:100%;font-size:17px;padding:9px;">
+          + ADD SAVED TASK
+        </button>
+      </div>
+
+      <!-- Export -->
+      <div class="card" style="padding:18px;margin-bottom:14px;">
+        <div style="font-size:13px;color:#FF2D78;letter-spacing:3px;margin-bottom:10px;">✦ EXPORT DATA</div>
+        <p style="font-size:15px;color:#CC0055;line-height:1.5;margin-bottom:14px;">
+          Download a backup of all your tasks as a <strong>.txt</strong> file.
+          Keep it safe — you can re-import it any time to restore your data.
+        </p>
+        <div style="background:#FFE0EE;border:2px solid #FFB3D1;padding:10px 14px;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap;">
+          <div style="text-align:center;flex:1;">
+            <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#FF2D78;">${dayCount}</div>
+            <div style="font-size:11px;color:#CC0055;letter-spacing:2px;">DAYS</div>
+          </div>
+          <div style="text-align:center;flex:1;">
+            <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#FF2D78;">${taskCount}</div>
+            <div style="font-size:11px;color:#CC0055;letter-spacing:2px;">TASKS</div>
+          </div>
+          <div style="text-align:center;flex:1;">
+            <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#FF2D78;">${doneCount}</div>
+            <div style="font-size:11px;color:#CC0055;letter-spacing:2px;">DONE</div>
+          </div>
+        </div>
+        <button class="btn primary" onclick="exportData()" style="width:100%;font-size:18px;padding:10px;">
+          ⬇ DOWNLOAD BACKUP · ${exportDate}
+        </button>
+      </div>
+
+      <!-- Import -->
+      <div class="card" style="padding:18px;margin-bottom:14px;">
+        <div style="font-size:13px;color:#FF2D78;letter-spacing:3px;margin-bottom:10px;">✦ IMPORT DATA</div>
+        <p style="font-size:15px;color:#CC0055;line-height:1.5;margin-bottom:14px;">
+          Select a previously exported <strong>strawpantrakr backup .txt</strong> file to restore your data.
+          <span style="color:#FF2D78;">⚠ This will replace all current data.</span>
+        </p>
+        <!-- Hidden file input — accepts .txt and all text types for iPhone compatibility -->
+        <input type="file" id="import-file-input" accept=".txt,text/plain" style="display:none;"
+          onchange="handleImport(this)">
+        <button class="btn" onclick="triggerImport()" style="width:100%;font-size:17px;padding:9px;">
+          ⬆ SELECT BACKUP FILE
+        </button>
+      </div>
+
+      <!-- Instructions -->
+      <div class="card" style="padding:18px;margin-bottom:14px;">
+        <div style="font-size:13px;color:#FF2D78;letter-spacing:3px;margin-bottom:10px;">✦ HOW TO BACKUP</div>
+        <div style="font-size:15px;color:#CC0055;line-height:1.8;">
+          <div>1. Tap <strong>DOWNLOAD BACKUP</strong> above</div>
+          <div>2. Save the <strong>.txt</strong> file to Files / iCloud</div>
+          <div>3. To restore: tap <strong>SELECT BACKUP FILE</strong></div>
+          <div>4. Choose your saved <strong>.txt</strong> backup</div>
+          <div style="margin-top:8px;color:#FFB3D1;font-size:13px;">
+            ✦ Back up regularly to avoid losing data ✦
+          </div>
+        </div>
+      </div>
+
+      <!-- Status message -->
+      <div id="settings-msg" style="text-align:center;font-size:16px;letter-spacing:2px;min-height:24px;transition:opacity 0.6s;opacity:0;padding:4px 0;"></div>
+    </div>`;
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key==='Enter') {
+    if (document.activeElement?.id === 'saved-task-text-input') { commitSavedTask(); return; }
+    if (document.getElementById('add-modal').style.display!=='none') addTask();
+  }
+  if (e.key==='Escape') {
+    closeModal();
+    if (document.getElementById('history-modal').style.display!=='none') closeHistory();
+  }
+});
+render();
+const el = document.getElementById('app-content');
+el.classList.add('anim-in-up');
+setTimeout(() => el.classList.remove('anim-in-up'), 250);
+</script>
+</body>
+</html>
