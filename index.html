@@ -1067,6 +1067,20 @@ function renderStats() {
 }
 
 // ── Task History Modal ─────────────────────────────────────────────────────
+function toggleHistoryTask(dateKey, taskId) {
+  state.tasks[dateKey] = (state.tasks[dateKey] || []).map(t =>
+    t.id === taskId ? { ...t, done: !t.done } : t
+  );
+  save();
+
+  // Refresh the modal in place with the updated data
+  const ref = window._historyTaskRef;
+  if (ref) openTaskHistoryForTask(ref.stamp, ref.text);
+
+  // Re-render the underlying stats page so its progress bars stay in sync
+  if (state.view === 'stats') render();
+}
+
 function openTaskHistoryByIdx(idx) {
   const t = (window._statsTaskList || [])[idx];
   if (!t) return;
@@ -1081,6 +1095,9 @@ function openTaskHistory(stampEscaped, textEscaped) {
 }
 
 function openTaskHistoryForTask(stamp, text) {
+  // Remember current task so the modal can be refreshed after a toggle
+  window._historyTaskRef = { stamp, text };
+
   const mapKey = stampKey(stamp) + '|' + text.toLowerCase().trim();
 
   // Gather every instance across all dates
@@ -1088,7 +1105,7 @@ function openTaskHistoryForTask(stamp, text) {
   Object.entries(state.tasks).forEach(([dateKey, arr]) => {
     (arr||[]).forEach(t => {
       const k = stampKey(t.stamp||'⭐') + '|' + t.text.toLowerCase().trim();
-      if (k === mapKey) instances.push({ dateKey, done: t.done });
+      if (k === mapKey) instances.push({ dateKey, taskId: t.id, done: t.done });
     });
   });
   // Sort newest first
@@ -1105,11 +1122,16 @@ function openTaskHistoryForTask(stamp, text) {
 
   document.getElementById('history-list').innerHTML = instances.length === 0
     ? `<div style="text-align:center;color:#FFB3D1;font-size:18px;padding:24px 0;">No history yet!</div>`
-    : instances.map(({dateKey, done}) => {
+    : instances.map(({dateKey, taskId, done}) => {
         const d = new Date(dateKey + 'T12:00:00');
         const label = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric'});
         return `
-          <div class="history-row">
+          <div class="history-row" onclick="toggleHistoryTask('${dateKey}',${taskId})"
+            style="cursor:pointer;"
+            onmouseenter="this.style.background='rgba(255,45,120,0.06)'"
+            onmouseleave="this.style.background=''"
+            ontouchstart="this.style.background='rgba(255,45,120,0.06)'"
+            ontouchend="this.style.background=''">
             <div style="width:22px;height:22px;flex-shrink:0;
               background:${done?'#FF2D78':'white'};
               border:2px solid #FF2D78;
