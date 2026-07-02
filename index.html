@@ -308,6 +308,14 @@
       <div id="modal-new-title" style="font-size:14px;color:#FF2D78;letter-spacing:3px;margin-bottom:8px;">✦ NEW TASK ✦</div>
       <input id="new-task-input" type="text" placeholder="WHAT 2 DO..." inputmode="text"
         style="width:100%;background:white;border:2px solid #FFB3D1;padding:10px 12px;font-size:20px;color:#CC0055;margin-bottom:10px;box-shadow:2px 2px 0 #FFB3D1;">
+
+      <!-- Date mover — only visible in edit mode -->
+      <div id="modal-date-row" style="display:none;margin-bottom:10px;">
+        <div style="font-size:12px;color:#FF2D78;letter-spacing:2px;margin-bottom:6px;">✦ MOVE TO DATE</div>
+        <input id="modal-date-input" type="date"
+          style="width:100%;background:white;border:2px solid #FFB3D1;padding:8px 10px;font-size:17px;color:#CC0055;box-shadow:2px 2px 0 #FFB3D1;">
+      </div>
+
       <div style="font-size:14px;color:#FF2D78;letter-spacing:2px;margin-bottom:6px;">✦ PICK A STAMP</div>
       <div class="stamp-grid" id="stamp-grid"></div>
       <div style="font-size:13px;color:#FFB3D1;letter-spacing:1px;margin-top:4px;margin-bottom:10px;">
@@ -429,9 +437,19 @@ function addTask() {
   // Edit mode — update existing task
   if (_editingTask) {
     const { dateKey, taskId } = _editingTask;
-    state.tasks[dateKey] = (state.tasks[dateKey] || []).map(t =>
-      t.id === taskId ? { ...t, text, stamp: stampRef(state.newStamp) } : t
-    );
+    const newDateKey = document.getElementById('modal-date-input').value || dateKey;
+    const updatedTask = {
+      ...(state.tasks[dateKey] || []).find(t => t.id === taskId),
+      text,
+      stamp: stampRef(state.newStamp),
+    };
+    // Remove from original date
+    state.tasks[dateKey] = (state.tasks[dateKey] || []).filter(t => t.id !== taskId);
+    if (state.tasks[dateKey].length === 0) delete state.tasks[dateKey];
+    // Add to new date (may be same date)
+    state.tasks[newDateKey] = [...(state.tasks[newDateKey] || []), updatedTask];
+    // Navigate to the new date so the user sees where it landed
+    state.selectedDate = newDateKey;
     save(); closeModal(); render();
     return;
   }
@@ -548,10 +566,11 @@ function openEditTaskModal(dateKey, taskId) {
   document.getElementById('modal-new-title').textContent = '✦ EDIT TASK ✦';
   document.getElementById('modal-submit-btn').textContent = '✓ SAVE CHANGES';
   document.getElementById('new-task-input').value = task.text;
+  document.getElementById('modal-date-row').style.display = '';
+  document.getElementById('modal-date-input').value = dateKey;
   state.newStamp = task.stamp || '⭐';
   renderStampGrid();
   document.getElementById('stamp-preview').innerHTML = stampDisplay(state.newStamp, '24px');
-  // Hide SAVED tab — not relevant when editing
   document.getElementById('modal-tab-saved').style.display = 'none';
   setModalTab('new');
   setTimeout(() => document.getElementById('new-task-input').focus(), 100);
@@ -559,9 +578,9 @@ function openEditTaskModal(dateKey, taskId) {
 
 function closeModal() {
   document.getElementById('add-modal').style.display = 'none';
-  // Restore NEW tab label and SAVED tab visibility
   document.getElementById('modal-tab-new').textContent = '✏️ NEW';
   document.getElementById('modal-tab-saved').style.display = '';
+  document.getElementById('modal-date-row').style.display = 'none';
   _editingTask = null;
 }
 function closeModalBg(e) {
